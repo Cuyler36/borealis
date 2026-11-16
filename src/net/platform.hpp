@@ -51,6 +51,11 @@ bool connect_in_progress(int error) noexcept;
 bool interrupted(int error) noexcept;
 void close_socket(NativeSocket socket) noexcept;
 bool set_nonblocking(NativeSocket socket) noexcept;
+bool set_nonblocking_mode(NativeSocket socket, bool enabled) noexcept;
+/** Datagram sockets: no connection resets from ICMP port-unreachable replies (Windows reports them). */
+void configure_datagram_socket(NativeSocket socket) noexcept;
+/** Bytes ready to read (FIONREAD), or -1. */
+long readable_bytes(NativeSocket socket) noexcept;
 std::string socket_error_message(int error);
 std::string resolve_error_message(int error);
 Error map_socket_error(int error) noexcept;

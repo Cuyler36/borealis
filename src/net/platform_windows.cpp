@@ -50,6 +50,27 @@ bool set_nonblocking(NativeSocket socket) noexcept {
     return ioctlsocket(socket, FIONBIO, &enabled) == 0;
 }
 
+bool set_nonblocking_mode(NativeSocket socket, bool enabled) noexcept {
+    u_long value = enabled ? 1 : 0;
+    return ioctlsocket(socket, FIONBIO, &value) == 0;
+}
+
+#ifndef SIO_UDP_CONNRESET
+#define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR, 12) // mstcpip.h on newer SDKs
+#endif
+
+void configure_datagram_socket(NativeSocket socket) noexcept {
+    BOOL reportResets = FALSE;
+    DWORD bytes = 0;
+    WSAIoctl(socket, SIO_UDP_CONNRESET, &reportResets, sizeof(reportResets), nullptr, 0, &bytes, nullptr,
+        nullptr);
+}
+
+long readable_bytes(NativeSocket socket) noexcept {
+    u_long bytes = 0;
+    return ioctlsocket(socket, FIONREAD, &bytes) == 0 ? static_cast<long>(bytes) : -1;
+}
+
 std::string socket_error_message(int error) {
     char* text = nullptr;
     const DWORD length = FormatMessageA(

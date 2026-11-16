@@ -6,6 +6,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <utility>
 
@@ -54,6 +55,18 @@ void close_socket(NativeSocket socket) noexcept {
 bool set_nonblocking(NativeSocket socket) noexcept {
     const int flags = fcntl(socket, F_GETFL, 0);
     return flags >= 0 && fcntl(socket, F_SETFL, flags | O_NONBLOCK) == 0;
+}
+
+bool set_nonblocking_mode(NativeSocket socket, bool enabled) noexcept {
+    const int flags = fcntl(socket, F_GETFL, 0);
+    return flags >= 0 && fcntl(socket, F_SETFL, enabled ? flags | O_NONBLOCK : flags & ~O_NONBLOCK) == 0;
+}
+
+void configure_datagram_socket(NativeSocket) noexcept {}
+
+long readable_bytes(NativeSocket socket) noexcept {
+    int bytes = 0;
+    return ioctl(socket, FIONREAD, &bytes) == 0 ? bytes : -1;
 }
 
 std::string socket_error_message(int error) {
